@@ -12,3 +12,4 @@ yarn-error.log
 /.well-known/
 .idea/
 sunaina_care.sql
+storage/
