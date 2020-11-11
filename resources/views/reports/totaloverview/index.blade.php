@@ -50,34 +50,44 @@
                             <thead>
                             <tr>
                                 <th>Date</th>
-                                <th>Services</th>
+                                <th>Services SRD</th>
+                                <th>Services USD</th>
+                                <th>Services EUR</th>
                                 <th>Products</th>
                                 <th>Costs</th>
                             </tr>
                             </thead>
 
                             <tbody>
-                            <?php
+                            @php
                             $service = 0;
+                            $service_usd = 0;
+                            $service_eur = 0;
                             $product = 0;
                             $cost = 0;
-                            ?>
+                            @endphp
                             @foreach ($chartpayment as $r)
-                             <?php
-                            $service += $r->servicetotal;
-                            $product += $r->producttotal;
+                             @php
+                            $service += $r->service_srd_total;
+                            $service_usd += $r->service_usd_total;
+                            $service_eur += $r->service_eur_total;
+                            $product += $r->product_srd_total;
                             $cost += $r->cost;
-                            ?>
+                            @endphp
                                 <tr>
                                     <td>{{ $r->created_at }}</td>
-                                    <td>{{ $r->servicetotal }} SRD</td>
-                                    <td>{{ $r->producttotal }} SRD</td>
+                                    <td>{{ $r->service_srd_total }} SRD</td>
+                                    <td>{{ $r->service_usd_total }} SRD</td>
+                                    <td>{{ $r->service_eur_total }} SRD</td>
+                                    <td>{{ $r->product_srd_total }} SRD</td>
                                     <td>{{ $r->cost }} SRD</td>
                                 </tr>
                             @endforeach
                             <tr>
                                 <td><b>Totaal</b></td>
                                 <td><b>{{ $service }} SRD</b></td>
+                                <td><b>{{ $service_usd }} USD</b></td>
+                                <td><b>{{ $service_eur }} EUR</b></td>
                                 <td><b>{{ $product }} SRD</b></td>
                                 <td><b>{{ $cost }} SRD</b></td>
                             </tr>
