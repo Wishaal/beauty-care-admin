@@ -268,6 +268,12 @@ return [
             'can'   => 'currency-list',
         ],
         [
+            'text'        => 'Vouchers',
+            'url'         => 'vouchers',
+            'icon'        => 'fas fa-fw fa-dollar-sign',
+            'can'   => 'currency-list',
+        ],
+        [
             'text'    => 'Reports',
             'icon'    => 'fas fa-fw fa-share',
             'submenu' => [
