@@ -255,35 +255,6 @@
                     stack: 'product'
                 }]
         });
-
-
-        $( document ).ready(function() {
-            var host  = "<?php echo $_SERVER['SERVER_NAME']; ?>";
-            toastr.info('Uploaded to SBC online');
-            if(host =="sbc.com"){
-                let _token   = $('meta[name="csrf-token"]').attr('content');
-
-                $.ajax({
-                    url: "/dashboard/upload",
-                    type:"GET",
-                    data:{
-                        _token: _token
-                    },
-                    success:function(response){
-                        if(response[0].status == "done"){
-                            $.ajax({
-                                url: "https://app.sunainasbeautycare.com/dashboard/import",
-                                type:"GET",
-                                success:function(data){
-                                    toastr.info('Uploaded to SBC online');
-                                },
-                            });
-                        }
-                    },
-                });
-            }
-
-        });
     </script>
 
 
