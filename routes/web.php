@@ -61,6 +61,7 @@ Route::group(['middleware' => ['auth']], function() {
     Route::resource('products', 'ProductController');
     Route::resource('appointments', 'AppointmentController');
     Route::resource('costs', 'CostController');
+    Route::resource('vouchers', 'VoucherController');
     Route::get('appointments/clients','AppointmentController@getClients');
     Route::post('appointments/create','AppointmentController@create');
     Route::post('appointments/update','AppointmentController@update');
