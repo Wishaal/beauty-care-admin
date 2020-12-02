@@ -1,9 +1,9 @@
 <div style="flex: 50%;max-width: 50%;padding: 0 4px;" class="column">
     <!-- Name Field -->
     <div class="form-group row ">
-        {!! Form::label('name', 'Name', ['class' => 'col-3 control-label text-right']) !!}
+        {!! Form::label('name', 'Voucher', ['class' => 'col-3 control-label text-right']) !!}
         <div class="col-9">
-            {!! Form::text('voucher', null,  ['class' => 'form-control','placeholder'=>  'Voucher Code']) !!}
+            {!! Form::text('voucher', 'SUN-'.substr(strtoupper(uniqid(rand(), true)), 9, 9).'-AINA',  ['class' => 'form-control','placeholder'=>  'Voucher Code']) !!}
             <div class="form-text text-muted">
             </div>
         </div>
