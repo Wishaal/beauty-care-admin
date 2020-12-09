@@ -89,5 +89,5 @@
     <input type="hidden" id="totalusd" name="totalusd" value="0">
     <input type="hidden" id="totaleur" name="totaleur" value="0">
     <button type="submit" class="btn btn-primary"><i class="fa fa-save"></i> Save Payment</button>
-    <a href="{!! route('service-payments.index') !!}" class="btn btn-default"><i class="fa fa-undo"></i>Cancel</a>
+    <a href="{{ url()->previous() }}" class="btn btn-default"><i class="fa fa-undo"></i>Cancel</a>
 </div>

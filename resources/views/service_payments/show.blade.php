@@ -24,7 +24,7 @@
 
         <!-- Back Field -->
         <div class="form-group col-12 text-right">
-          <a href="{!! route('clients.index') !!}" class="btn btn-default"><i class="fa fa-undo"></i> Back</a>
+          <a href="{{ url()->previous() }}" class="btn btn-default"><i class="fa fa-undo"></i> Back</a>
         </div>
       </div>
       <div class="clearfix"></div>

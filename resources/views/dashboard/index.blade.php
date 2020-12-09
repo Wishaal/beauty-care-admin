@@ -112,7 +112,8 @@
                 </figure>
             </div>
         </div>
-            <div><div class="col-md-12">
+            <div>
+                <div class="col-md-12">
                 <div class="card">
                     <div class="card-header">
                         <h3 class="card-title">Services vs Products</h3>
