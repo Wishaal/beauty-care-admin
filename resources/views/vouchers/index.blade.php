@@ -58,7 +58,7 @@
                 ajax: "/vouchers",
                 order: [[ 1, 'desc' ]],
                 columns: [
-                    {data: 'action', name: 'action', orderable: false, searchable: false},
+                    {data: 'action', name: 'action', orderable: false, searchable: true},
                     {data: 'DT_RowIndex', name: 'DT_RowIndex'},
                     {data: 'voucher', name: 'Voucher'},
                     {data: 'amount', name: 'Amount'},
