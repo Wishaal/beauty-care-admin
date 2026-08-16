@@ -33,45 +33,72 @@ class DashboardController extends Controller
 
     public function upload2server(){
         $status = array();
-        //Enter your database information here and the name of the backup file
-        $mysqlDatabaseName ='sunaina_care';
-        $mysqlUserName ='${BACKUP_DB_USERNAME}';
-        $mysqlPassword ='${BACKUP_DB_PASSWORD}';
-        $mysqlHostName ='localhost';
-        $mysqlExportPath ='sunaina_care.sql';
 
-        //Please do not change the following points
-        //Export of the database and output of the status
-        $command='mysqldump --skip-comments --opt -h ' .$mysqlHostName .' -u' .$mysqlUserName .' -p' .$mysqlPassword .' ' .$mysqlDatabaseName .' > ' .$mysqlExportPath;
-        $output1 = $output = array();
-        exec($command, $output1,$worked);
+        $db = config('backup.db');
+        $exportPath = storage_path('app/' . config('backup.dump_file'));
+
+        // The password is handed to mysqldump through the environment rather than
+        // the command line: argv is world-readable via `ps` on a shared host.
+        $command = sprintf(
+            'mysqldump --skip-comments --opt -h %s -u %s %s > %s',
+            escapeshellarg($db['host']),
+            escapeshellarg($db['username']),
+            escapeshellarg($db['database']),
+            escapeshellarg($exportPath)
+        );
+
+        $descriptors = [1 => ['pipe', 'w'], 2 => ['pipe', 'w']];
+        $process = proc_open(
+            $command,
+            $descriptors,
+            $pipes,
+            null,
+            ['MYSQL_PWD' => (string) $db['password']] + $_ENV
+        );
+
+        if (!is_resource($process)) {
+            return response()->json([['status' => 'error']]);
+        }
+
+        foreach ($pipes as $pipe) {
+            stream_get_contents($pipe);
+            fclose($pipe);
+        }
+        $worked = proc_close($process);
+
         switch($worked){
             case 0:
-                $content = file_get_contents('sunaina_care.sql');
+                $content = file_get_contents($exportPath);
                 $content = str_replace('/*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */', '', $content);
-                file_put_contents('sunaina_care.sql', $content);
+                file_put_contents($exportPath, $content);
 
-                $ftp_server="${BACKUP_FTP_HOST}";
-                $ftp_user_name="sunaina";
-                $ftp_user_pass="${BACKUP_FTP_PASSWORD}";
-                $file = "sunaina_care.sql";//tobe uploaded
-                $remote_file = "app.sunainasbeautycare.com/sunaina_care.sql";
+                $ftp = config('backup.ftp');
 
-                // set up basic connection
-                $conn_id = ftp_connect($ftp_server);
+                if (empty($ftp['host'])) {
+                    // Offsite upload not configured — the local dump still succeeded.
+                    $status[] = ['status' =>'done'];
+                    break;
+                }
 
-                // login with username and password
-                $login_result = ftp_login($conn_id, $ftp_user_name, $ftp_user_pass);
+                // FTPS by default: plain FTP sends the password in clear text.
+                $conn_id = $ftp['ssl']
+                    ? ftp_ssl_connect($ftp['host'], 21, $ftp['timeout'])
+                    : ftp_connect($ftp['host'], 21, $ftp['timeout']);
 
-                // upload a file
-                if (ftp_put($conn_id, $remote_file, $file, FTP_ASCII)) {
+                if ($conn_id === false || !ftp_login($conn_id, $ftp['username'], $ftp['password'])) {
+                    $status[] = ['status' =>'ftperror'];
+                    break;
+                }
+
+                ftp_pasv($conn_id, true);
+
+                if (ftp_put($conn_id, $ftp['remote_path'], $exportPath, FTP_BINARY)) {
                     $status[] = ['status' =>'done'];
                 } else {
                     $status[] = ['status' =>'ftperror'];
                 }
-                // close the connection
-                ftp_close($conn_id);
 
+                ftp_close($conn_id);
 
                 break;
             case 1:
@@ -86,12 +113,24 @@ class DashboardController extends Controller
     }
 
     public function import2db(){
-        $sql = file_get_contents('../sunaina_care.sql');
+        $dumpPath = storage_path('app/' . config('backup.dump_file'));
 
-        $mysqli = new mysqli("localhost", "${BACKUP_DB_USERNAME}", "${BACKUP_DB_PASSWORD}", "sunaina_care");
+        if (!is_readable($dumpPath)) {
+            return response()->json(['status' =>'error'], 404);
+        }
+
+        $sql = file_get_contents($dumpPath);
+
+        $db = config('backup.db');
+        $mysqli = new mysqli($db['host'], $db['username'], $db['password'], $db['database']);
+
+        if ($mysqli->connect_errno) {
+            return response()->json(['status' =>'database'], 500);
+        }
 
         /* execute multi query */
         $mysqli->multi_query($sql);
+        $mysqli->close();
 
         return response()->json(['status' =>'done']);
 

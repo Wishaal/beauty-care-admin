@@ -19,35 +19,42 @@ Route::get('/', function () {
 
 Auth::routes(['register' => false]);
 
-Route::get('/config-cache', function() {
-    $exitCode = Artisan::call('config:clear');
-    return 'Config cache cleared';
+// Cache-maintenance helpers. These invoke Artisan, so they are admin-only —
+// leaving them open lets anyone flush the application's caches at will.
+Route::group(['middleware' => ['auth']], function() {
+    Route::get('/config-cache', function() {
+        Artisan::call('config:clear');
+        return 'Config cache cleared';
+    });
+
+    //Clear route cache:
+    Route::get('/route-cache', function() {
+        Artisan::call('route:clear');
+        return 'Routes cache cleared';
+    });
+
+    // Clear view cache:
+    Route::get('/view-cache', function() {
+        Artisan::call('view:clear');
+        return 'View cache cleared';
+    });
+
+    // Clear application cache:
+    Route::get('/clear-cache', function() {
+        Artisan::call('cache:clear');
+        return 'Application cache cleared';
+    });
 });
 
-//Clear route cache:
-Route::get('/route-cache', function() {
-    $exitCode = Artisan::call('route:clear');
-    return 'Routes cache cleared';
-});
-
-// Clear view cache:
-Route::get('/view-cache', function() {
-    $exitCode = Artisan::call('view:clear');
-    return 'View cache cleared';
-});
-
-// Clear application cache:
-Route::get('/clear-cache', function() {
-    $exitCode = Artisan::call('cache:clear');
-    return 'Application cache cleared';
-});
 Route::get('dashboard/upload', 'DashboardController@upload2server')->name('upload2server')->middleware('auth');
-Route::get('dashboard/import', 'DashboardController@import2db')->name('import2db');
+Route::get('dashboard/import', 'DashboardController@import2db')->name('import2db')->middleware('auth');
 Route::get('service-payments/createclient', 'ServicePaymentController@createclient')->name('service-payments.createclient')->middleware('auth');
 Route::post('service-payments/createclient', 'ServicePaymentController@storeclient')->name('service-payments.storeclient')->middleware('auth');
 Route::get('dashboard', 'DashboardController@index')->name('dashboard')->middleware('auth');
-Route::get('appointments/clients','AppointmentController@getClients');
-Route::get('update','UpdateRecordsController@index');
+// Returns client names and phone numbers — must never be public.
+Route::get('appointments/clients','AppointmentController@getClients')->middleware('auth');
+// One-off data backfill that writes Discount rows; re-running duplicates them.
+Route::get('update','UpdateRecordsController@index')->middleware('auth');
 Route::group(['middleware' => ['auth']], function() {
     Route::resource('roles','RoleController');
     Route::resource('service-payments','ServicePaymentController');
